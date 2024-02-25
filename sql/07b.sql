@@ -11,5 +11,5 @@ left join customer on rental.customer_id = customer.customer_id
 left join address on customer.address_id = address.address_id
 left join city on address.city_id = city.city_id
 left join country on city.country_id = country.country_id and country.country = 'United States'
-where country.country_id is not null and rental.rental_id is not null
+where country.country_id is null and rental.rental_id is not null
 order by film.title;

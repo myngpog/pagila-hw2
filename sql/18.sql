@@ -29,16 +29,11 @@ SELECT
     title,
     revenue,
     SUM(revenue) OVER (ORDER BY rank) AS "total revenue",
-    CASE
-        WHEN (100 * SUM(revenue) OVER (ORDER BY rank)) / SUM(revenue) OVER () = 100
-        THEN '100.00'
-        WHEN (100 * SUM(revenue) OVER (ORDER BY rank)) / SUM(revenue) OVER () < 10
-        THEN to_char((100 * SUM(revenue) OVER (ORDER BY rank)) / SUM(revenue) OVER (), 'FM00.99')
-        ELSE to_char((100 * SUM(revenue) OVER (ORDER BY rank)) / SUM(revenue) OVER (), 'FM999.99')
-    END AS "revenue percent"
+    to_char(((100 * SUM(revenue) OVER (ORDER BY rank)) / SUM(revenue) OVER ()), 'FM99.99')
+    AS "percent revenue"
 FROM
     FilmRevenue
 ORDER BY
     rank,
     title,
-    "revenue percent";
+    "percent revenue";

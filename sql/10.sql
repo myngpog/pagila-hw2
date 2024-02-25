@@ -10,14 +10,14 @@
  * Use this query as a subquery in a select statement similar to answer to the previous problem.
  */
 
-select features as special_features, sum(profit) as profit
+select special_features as special_feature, sum(profit) as profit
 from (
-    select film.title, sum(amount) as profit, unnest(special_features) as feature
+    select film.title, sum(amount) as profit, unnest(special_features) as special_features
     from film
     join inventory using (film_id)
     join rental using (inventory_id)
     join payment using (rental_id)
-    group by film.title, feature
+    group by film.title, special_features
 ) as subquery
-group by feature
-order by special_features
+group by special_features
+order by special_features;
