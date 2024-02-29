@@ -10,7 +10,7 @@
 
 WITH FilmRevenue AS (
     SELECT
-        ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(p.amount), 0.00) DESC) AS rank,
+        RANK() OVER (ORDER BY COALESCE(SUM(p.amount), 0.00) DESC) AS "rank",
         f.title,
         COALESCE(SUM(p.amount), 0.00) AS revenue
     FROM
@@ -23,17 +23,43 @@ WITH FilmRevenue AS (
         payment p ON r.rental_id = p.rental_id
     GROUP BY
         f.title
+), TotalRevenue AS (
+    SELECT
+        SUM(revenue) AS "total revenue"
+    FROM
+        FilmRevenue
 )
 SELECT
-    rank,
+    "rank",
     title,
     revenue,
-    SUM(revenue) OVER (ORDER BY rank) AS "total revenue",
-    to_char(((100 * SUM(revenue) OVER (ORDER BY rank)) / SUM(revenue) OVER ()), 'FM99.99')
-    AS "percent revenue"
+    "total revenue",
+    TO_CHAR((100 * "total revenue") / SUM(revenue) OVER (), 'FM900.00') AS "percent revenue"
 FROM
-    FilmRevenue
+    (
+        SELECT
+            "rank",
+            title,
+            revenue,
+            SUM(revenue) OVER (ORDER BY revenue DESC) AS "total revenue"
+        FROM
+            (
+                SELECT
+                    RANK() OVER (ORDER BY COALESCE(SUM(p.amount), 0.00) DESC) AS "rank",
+                    f.title,
+                    COALESCE(SUM(p.amount), 0.00) AS revenue
+                FROM
+                    film f
+                LEFT JOIN
+                    inventory i ON f.film_id = i.film_id
+                LEFT JOIN
+                    rental r ON i.inventory_id = r.inventory_id
+                LEFT JOIN
+                    payment p ON r.rental_id = p.rental_id
+                GROUP BY
+                    f.title
+            ) as s1
+    ) as s2
 ORDER BY
-    rank,
-    title,
-    "percent revenue";
+    revenue DESC,
+    title;

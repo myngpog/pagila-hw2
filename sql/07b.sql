@@ -5,11 +5,16 @@
 
 SELECT DISTINCT film.title
 from film
-left join inventory on film.film_id = inventory.inventory_id
-left join rental on inventory.inventory_id = rental.inventory_id
-left join customer on rental.customer_id = customer.customer_id
-left join address on customer.address_id = address.address_id
-left join city on address.city_id = city.city_id
-left join country on city.country_id = country.country_id and country.country = 'United States'
-where country.country_id is null and rental.rental_id is not null
+join inventory using (film_id)
+left join (
+    select (inventory.film_id)
+    from inventory
+    join rental using (inventory_id)
+    join customer using (customer_id)
+    join address using (address_id)
+    join city using (city_id)
+    join country using (country_id)
+    where country.country = 'United States'
+) as rented_in_us on inventory.film_id = rented_in_us.film_id
+where rented_in_us.film_id is null
 order by film.title;
